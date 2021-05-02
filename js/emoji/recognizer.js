@@ -1,7 +1,7 @@
 let model;
 var canvasWidth             = 266;
 var canvasHeight            = 266;
-var canvasStrokeStyle       ="#2285a3"; //"white";
+var canvasStrokeStyle       ="white";//"#2285a3"; //"white";
 var canvasLineJoin          = "round";
 var canvasLineWidth         = 10;
 var canvasBackgroundColor   = "black";
@@ -141,6 +141,60 @@ $("#clear-button").click(async function () {
     clickX = new Array();
     clickY = new Array();
     clickD = new Array();
-    $(".prediction-text").empty();
-    $("#result_box").addClass('d-none');
 });
+
+//Load model
+async function loadModel() {
+    // clear the model variable
+    model = undefined; 
+    // load the model using a HTTPS request (where you have stored your model files)
+    model = await tf.loadLayersModel("python/models/model.json");
+  }
+
+loadModel();
+
+// Preprocess the canvas
+function preprocessCanvas(image) {
+    // resize the input image to target size of (1, 28, 28)
+    let tensor = tf.browser.fromPixels(image)
+        .resizeNearestNeighbor([28, 28])
+        .mean(2)
+        .expandDims(2)
+        .expandDims()
+        .toFloat();
+    return tensor.div(255.0);
+}
+
+// predict function
+$("#predict-button").click(async function () {
+    // get image data from canvas
+    var imageData = canvas.toDataURL();
+ 
+    // preprocess canvas
+    let tensor = preprocessCanvas(canvas);
+ 
+    // make predictions on the preprocessed image tensor
+    let predictions = await model.predict(tensor).data();
+ 
+    // get the model's prediction results
+    let results = Array.from(predictions);
+ 
+    displayLabel(results);
+    console.log(results);
+});
+
+function displayLabel(data) {
+    var max = data[0];
+    var maxIndex = 0;
+    var emojis = ["🐇", "🦈", "🙂", "🍓", "🚽"];
+ 
+    for (var i = 1; i < data.length; i++) {
+        if (data[i] > max) {
+            maxIndex = i;
+            max = data[i];
+        }
+    }
+    console.log(maxIndex);
+    var input = document.getElementsByClassName("use-keyboard-input")[0];
+    input.value = input.value +emojis[maxIndex];
+}
