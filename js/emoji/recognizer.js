@@ -1,5 +1,5 @@
 let model;
-var canvasWidth             = 266;
+var canvasWidth             = 260;
 var canvasHeight            = 266;
 var canvasStrokeStyle       ="white";//"#2285a3"; //"white";
 var canvasLineJoin          = "round";
